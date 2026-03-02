@@ -74,7 +74,7 @@ const StatCard = ({ title, value, subValue, trend, icon: Icon }: { title: string
 // --- Main App ---
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(JSON.parse(localStorage.getItem('user') || 'null'));
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [activeTab, setActiveTab] = useState<'trades' | 'dashboard' | 'setups' | 'emotional'>('dashboard');
   const [trades, setTrades] = useState<Trade[]>([]);
@@ -126,6 +126,7 @@ export default function App() {
     const data = await res.json();
     if (res.ok) {
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       setToken(data.token);
       setUser(data.user);
     } else {
@@ -135,6 +136,7 @@ export default function App() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
     setTrades([]);
@@ -279,10 +281,10 @@ export default function App() {
         <div className="p-4 border-t border-border-dark">
           <div className="flex items-center gap-3 p-3 rounded-xl bg-bg-dark/50 mb-4">
             <div className="w-8 h-8 rounded-full bg-brand-secondary flex items-center justify-center text-xs font-bold">
-              {email[0].toUpperCase()}
+              {user?.email?.[0]?.toUpperCase() || '?'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{email}</p>
+              <p className="text-sm font-medium truncate">{user?.email || 'Usuário'}</p>
               <p className="text-[10px] text-brand-primary font-bold uppercase tracking-wider">Plano Pro</p>
             </div>
           </div>
@@ -752,7 +754,7 @@ function TradeForm({ onSuccess, token }: { onSuccess: () => void; token: string 
     exit_price: 0,
     risk_amount: 100,
     lot: 1,
-    setup: 'Pullback',
+    setup: 'ICT',
     market_condition: 'Tendência',
     is_planned: true,
     emotion: 'Confiante',
@@ -787,11 +789,11 @@ function TradeForm({ onSuccess, token }: { onSuccess: () => void; token: string 
             </FormGroup>
             <FormGroup label="Ativo">
               <select className="input-field" value={formData.asset} onChange={e => setFormData({...formData, asset: e.target.value})}>
-                <option>WIN</option>
-                <option>WDO</option>
-                <option>Ações</option>
-                <option>Crypto</option>
+                <option>WIN (Mini Índice)</option>
+                <option>WDO (Mini Dólar)</option>
                 <option>Forex</option>
+                <option>Ações B3</option>
+                <option>Crypto</option>
               </select>
             </FormGroup>
             <FormGroup label="Direção">
@@ -853,10 +855,10 @@ function TradeForm({ onSuccess, token }: { onSuccess: () => void; token: string 
           <div className="space-y-3">
             <FormGroup label="Setup">
               <select className="input-field" value={formData.setup} onChange={e => setFormData({...formData, setup: e.target.value})}>
+                <option>ICT (Inner Circle Trader)</option>
+                <option>SMC (Smart Money Concepts)</option>
                 <option>Pullback</option>
                 <option>Rompimento</option>
-                <option>Exaustão</option>
-                <option>Vwap</option>
                 <option>Reversão</option>
               </select>
             </FormGroup>
